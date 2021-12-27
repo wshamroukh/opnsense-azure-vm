@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 #variables
 location='uksouth'
-rg_name='opnsense1'
+rg_name='opnsense'
 vm_name='opnsense'
 vm_image='thefreebsdfoundation:freebsd-12_2:12_2-release:12.2.0'
 vnet_name='opnsense-vnet'

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 #variables
-location='uksouth'
+location='westeurope'
 rg_name='opnsense'
 vm_name='opnsense'
 vm_image='thefreebsdfoundation:freebsd-12_2:12_2-release:12.2.0'
@@ -10,8 +10,8 @@ lan_subnet_name='lan-subnet'
 lan_subnet_address='10.10.1.0/24'
 wan_subnet_name='wan-subnet'
 wan_subnet_address='10.10.0.0/24'
-admin_username='waddahs'
-admin_password='Test#123#123'
+admin_username='adminuser'
+admin_password='P@ssw0rd12345'
 cloud_init_file=/tmp/cloud_init.sh
 tee -a $cloud_init_file > /dev/null <<'EOF'
 #!/usr/local/bin/bash

@@ -10,9 +10,9 @@ lan_subnet_name='lan-subnet'
 lan_subnet_address='10.10.1.0/24'
 wan_subnet_name='wan-subnet'
 wan_subnet_address='10.10.0.0/24'
-admin_username='adminuser'
-admin_password='P@ssw0rd12345'
-cloud_init_file=/tmp/cloud_init.sh
+admin_username='waddahs'
+admin_password='P@ssw0rd#$3cr3t'
+cloud_init_file=~/cloud_init.sh
 tee -a $cloud_init_file > /dev/null <<'EOF'
 #!/usr/local/bin/bash
 echo $admin_password | sudo -S pkg update
@@ -71,8 +71,8 @@ sleep 30
 opnsense_vm_id=$(az vm show -n $vm_name -g $rg_name --query 'id' -o tsv)
 wait_until_finished $opnsense_vm_id
 
-config_file=/tmp/config.xml
-curl -o $config_file https://raw.githubusercontent.com/wshamroukh/opnsense/main/config.xml
+config_file=~/config.xml
+curl https://raw.githubusercontent.com/wshamroukh/opnsense/main/config.xml -O
 scp $cloud_init_file $config_file $admin_username@$opnsense_public_ip:/home/$admin_username
 ssh $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/cloud_init.sh && /home/$admin_username/cloud_init.sh"
 rm $cloud_init_file $config_file
@@ -81,4 +81,3 @@ echo -e "\e[1;31mVM is now rebooting. You can access it by going to https://$opn
 #https://publicIP/
 #usename: root
 #passwd: opnsense
-

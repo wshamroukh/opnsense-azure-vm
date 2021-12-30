@@ -67,7 +67,7 @@ echo -e "\e[1;36mCreating Public IP address $vm_name-public-ip...\e[0m"
 az network public-ip create -n "$vm_name-public-ip" -g $rg_name --allocation-method Static --sku Basic -o none
 az network nic create -n "$vm_name-wan-nic" -g $rg_name --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address "$vm_name-public-ip" -o none
 az network nic create -n "$vm_name-lan-nic" -g $rg_name --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
-echo -e "\e[1;36mCreating Public IP address $vm_name...\e[0m"
+echo -e "\e[1;36mCreating VM $vm_name...\e[0m"
 az vm create -n $vm_name -g $rg_name --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size Standard_B2s --admin-username $admin_username --admin-password $admin_password --no-wait
 opnsense_public_ip=$(az network public-ip show -n "$vm_name-public-ip" -g $rg_name --query 'ipAddress' --output tsv)
 sleep 30

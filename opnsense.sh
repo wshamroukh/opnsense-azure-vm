@@ -40,7 +40,7 @@ function wait_until_finished {
      wait_interval=15
      resource_id=$1
      resource_name=$(echo $resource_id | cut -d/ -f 9)
-     echo -e "\e[1;36m Waiting for resource $resource_name to finish provisioning...\e[0m"
+     echo -e "\e[1;36mWaiting for resource $resource_name to finish provisioning...\e[0m"
      start_time=`date +%s`
      state=$(az resource show --id $resource_id --query properties.provisioningState -o tsv)
      until [[ "$state" == "Succeeded" ]] || [[ "$state" == "Failed" ]] || [[ -z "$state" ]]
@@ -58,13 +58,16 @@ function wait_until_finished {
         echo -e "\e[1;32mResource $resource_name provisioning state is $state, wait time $minutes minutes and $seconds seconds\e[0m"
      fi
 }
-
+echo -e "\e[1;36mCreating Resource Group $rg_name...\e[0m"
 az group create -n $rg_name -l $location
+echo -e "\e[1;36mCreating VNet $vnet_name...\e[0m"
 az network vnet create -n $vnet_name -g $rg_name --address-prefixes $vnet_address --subnet-name $lan_subnet_name --subnet-prefixes $lan_subnet_address
 az network vnet subnet create -n $wan_subnet_name -g $rg_name --vnet-name $vnet_name --address-prefixes $wan_subnet_address
+echo -e "\e[1;36mCreating Public IP address $vm_name-public-ip...\e[0m"
 az network public-ip create -n "$vm_name-public-ip" -g $rg_name --allocation-method Static --sku Basic
 az network nic create -n "$vm_name-wan-nic" -g $rg_name --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address "$vm_name-public-ip"
 az network nic create -n "$vm_name-lan-nic" -g $rg_name --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250
+echo -e "\e[1;36mCreating Public IP address $vm_name...\e[0m"
 az vm create -n $vm_name -g $rg_name --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size Standard_B2s --admin-username $admin_username --admin-password $admin_password --no-wait
 opnsense_public_ip=$(az network public-ip show -n "$vm_name-public-ip" -g $rg_name --query 'ipAddress' --output tsv)
 sleep 30
@@ -73,6 +76,7 @@ wait_until_finished $opnsense_vm_id
 
 config_file=~/config.xml
 curl https://raw.githubusercontent.com/wshamroukh/opnsense/main/config.xml -O
+echo -e "\e[1;36mCopying configuration files to $vm_name and installing opnsense firewall...\e[0m"
 scp $cloud_init_file $config_file $admin_username@$opnsense_public_ip:/home/$admin_username
 ssh $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/cloud_init.sh && /home/$admin_username/cloud_init.sh"
 rm $cloud_init_file $config_file

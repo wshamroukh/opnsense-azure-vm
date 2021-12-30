@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+
 #variables
 location='westeurope'
 rg_name='opnsense'

@@ -347,6 +347,31 @@
         <description>/firewall_rules_edit.php made changes</description>
       </created>
     </rule>
+	<rule>
+      <type>pass</type>
+      <interface>wan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <statetype>keep state</statetype>
+      <disablereplyto>1</disablereplyto>
+      <protocol>tcp</protocol>
+      <source>
+        <any>1</any>
+      </source>
+      <destination>
+        <network>wanip</network>
+        <port>22</port>
+      </destination>
+      <updated>
+        <username>root@187.143.37.51</username>
+        <time>1503706250.2226</time>
+        <description>/firewall_rules_edit.php made changes</description>
+      </updated>
+      <created>
+        <username>root@187.143.39.253</username>
+        <time>1502150334.1255</time>
+        <description>/firewall_rules_edit.php made changes</description>
+      </created>
+    </rule>
     <rule>
       <type>pass</type>
       <ipprotocol>inet</ipprotocol>

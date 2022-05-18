@@ -1,9 +1,10 @@
 
+# https://github.com/opnsense/update
 #variables
 location='westeurope'
-rg_name='opnsense'
+rg='opnsense'
 vm_name='opnsense'
-vm_image='thefreebsdfoundation:freebsd-12_2:12_2-release:12.2.0'
+vm_image='thefreebsdfoundation:freebsd-13_0:13_0-release:13.0.7'
 vnet_name='opnsense-vnet'
 vnet_address='10.10.0.0/16'
 lan_subnet_name='lan-subnet'
@@ -58,25 +59,27 @@ function wait_until_finished {
         echo -e "\e[1;32mResource $resource_name provisioning state is $state, wait time $minutes minutes and $seconds seconds\e[0m"
      fi
 }
-echo -e "\e[1;36mCreating Resource Group $rg_name...\e[0m"
-az group create -n $rg_name -l $location -o none
+echo -e "\e[1;36mCreating Resource Group $rg...\e[0m"
+az group create -n $rg -l $location -o none
+
 echo -e "\e[1;36mCreating VNet $vnet_name...\e[0m"
-az network vnet create -n $vnet_name -g $rg_name --address-prefixes $vnet_address --subnet-name $lan_subnet_name --subnet-prefixes $lan_subnet_address -o none
-az network vnet subnet create -n $wan_subnet_name -g $rg_name --vnet-name $vnet_name --address-prefixes $wan_subnet_address -o none
+az network vnet create -n $vnet_name -g $rg --address-prefixes $vnet_address --subnet-name $lan_subnet_name --subnet-prefixes $lan_subnet_address -o none
+az network vnet subnet create -n $wan_subnet_name -g $rg --vnet-name $vnet_name --address-prefixes $wan_subnet_address -o none
+
 echo -e "\e[1;36mCreating Public IP address $vm_name-public-ip...\e[0m"
-az network public-ip create -n "$vm_name-public-ip" -g $rg_name --allocation-method Static --sku Basic -o none
-az network nic create -n "$vm_name-wan-nic" -g $rg_name --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address "$vm_name-public-ip" -o none
-az network nic create -n "$vm_name-lan-nic" -g $rg_name --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
+az network public-ip create -n "$vm_name-public-ip" -g $rg --allocation-method Static --sku Basic -o none
+az network nic create -n "$vm_name-wan-nic" -g $rg --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address "$vm_name-public-ip" -o none
+az network nic create -n "$vm_name-lan-nic" -g $rg --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
+
 echo -e "\e[1;36mCreating VM $vm_name...\e[0m"
 az vm image terms accept --urn $vm_image -o none
-az vm create -n $vm_name -g $rg_name --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size Standard_B2s --admin-username $admin_username --generate-ssh-keys --no-wait
-opnsense_public_ip=$(az network public-ip show -n "$vm_name-public-ip" -g $rg_name --query 'ipAddress' --output tsv)
-sleep 60
-echo -e "\e[1;36mEnabling VM boot diagnostics...\e[0m"
-az vm boot-diagnostics enable -n $vm_name -g $rg_name -o none
-opnsense_vm_id=$(az vm show -n $vm_name -g $rg_name --query 'id' -o tsv)
+az vm create -n $vm_name -g $rg --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size Standard_B2s --admin-username $admin_username --generate-ssh-keys --no-wait
+opnsense_public_ip=$(az network public-ip show -n "$vm_name-public-ip" -g $rg --query 'ipAddress' --output tsv)
+opnsense_vm_id=$(az vm show -n $vm_name -g $rg --query 'id' -o tsv)
 wait_until_finished $opnsense_vm_id
 
+echo -e "\e[1;36mEnabling VM boot diagnostics...\e[0m"
+az vm boot-diagnostics enable -n $vm_name -g $rg -o none
 
 config_file=~/config.xml
 curl https://raw.githubusercontent.com/wshamroukh/opnsense/main/config.xml -O

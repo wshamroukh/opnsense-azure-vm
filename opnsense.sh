@@ -60,27 +60,35 @@ function wait_until_finished {
         echo -e "\e[1;32mResource $resource_name provisioning state is $state, wait time $minutes minutes and $seconds seconds\e[0m"
      fi
 }
+
+# resource group
 echo -e "\e[1;36mCreating Resource Group $rg...\e[0m"
 az group create -n $rg -l $location -o none
 
+# vnet
 echo -e "\e[1;36mCreating VNet $vnet_name...\e[0m"
 az network vnet create -n $vnet_name -g $rg --address-prefixes $vnet_address --subnet-name $lan_subnet_name --subnet-prefixes $lan_subnet_address -o none
 az network vnet subnet create -n $wan_subnet_name -g $rg --vnet-name $vnet_name --address-prefixes $wan_subnet_address -o none
 
-echo -e "\e[1;36mCreating Public IP address $vm_name-public-ip...\e[0m"
+# vm
+echo -e "\e[1;36mCreating VM $vm_name...\e[0m"
 az network public-ip create -n "$vm_name-public-ip" -g $rg --allocation-method Static --sku Basic -o none
 az network nic create -n "$vm_name-wan-nic" -g $rg --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address "$vm_name-public-ip" -o none
 az network nic create -n "$vm_name-lan-nic" -g $rg --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
-
-echo -e "\e[1;36mCreating VM $vm_name...\e[0m"
 az vm create -n $vm_name -g $rg --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size Standard_B2s --admin-username $admin_username --generate-ssh-keys --no-wait
+
+# vm details
 opnsense_public_ip=$(az network public-ip show -n "$vm_name-public-ip" -g $rg --query 'ipAddress' --output tsv)
 opnsense_vm_id=$(az vm show -n $vm_name -g $rg --query 'id' -o tsv)
+
+# waiting for vm to finish provisioning
 wait_until_finished $opnsense_vm_id
 
+# enable vm boot diagnostic
 echo -e "\e[1;36mEnabling VM boot diagnostics...\e[0m"
 az vm boot-diagnostics enable -n $vm_name -g $rg -o none
 
+# installation and configuration of opnsense 
 config_file=~/config.xml
 curl https://raw.githubusercontent.com/wshamroukh/opnsense/main/config.xml -O
 echo -e "\e[1;36mCopying configuration files to $vm_name and installing opnsense firewall...\e[0m"

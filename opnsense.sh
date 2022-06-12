@@ -4,7 +4,8 @@
 location='westeurope'
 rg='opnsense'
 vm_name='opnsense'
-vm_image='thefreebsdfoundation:freebsd-13_0:13_0-release:13.0.7'
+vm_image=$(az vm image list -l $location -p thefreebsdfoundation --all --query "[?offer=='freebsd-13_1'].urn" -o tsv | sort -u | tail -n 1)
+az vm image terms accept --urn $vm_image -o none
 vnet_name='opnsense-vnet'
 vnet_address='10.10.0.0/16'
 lan_subnet_name='lan-subnet'
@@ -72,7 +73,6 @@ az network nic create -n "$vm_name-wan-nic" -g $rg --subnet $wan_subnet_name --v
 az network nic create -n "$vm_name-lan-nic" -g $rg --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
 
 echo -e "\e[1;36mCreating VM $vm_name...\e[0m"
-az vm image terms accept --urn $vm_image -o none
 az vm create -n $vm_name -g $rg --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size Standard_B2s --admin-username $admin_username --generate-ssh-keys --no-wait
 opnsense_public_ip=$(az network public-ip show -n "$vm_name-public-ip" -g $rg --query 'ipAddress' --output tsv)
 opnsense_vm_id=$(az vm show -n $vm_name -g $rg --query 'id' -o tsv)

@@ -12,7 +12,7 @@ lan_subnet_name='lan-subnet'
 lan_subnet_address='10.10.1.0/24'
 wan_subnet_name='wan-subnet'
 wan_subnet_address='10.10.0.0/24'
-admin_username='waddahs'
+admin_username=$(whoami)
 admin_password='P@ssw0rd#$3cr3t'
 cloud_init_file=~/cloud_init.sh
 tee -a $cloud_init_file > /dev/null <<'EOF'

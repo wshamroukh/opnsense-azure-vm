@@ -31,7 +31,7 @@ fetch https://raw.githubusercontent.com/opnsense/update/master/src/bootstrap/opn
 sed 's/reboot/#reboot/' opnsense-bootstrap.sh.in >opnsense-bootstrap.sh.in.tmp
 mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
 chmod +x opnsense-bootstrap.sh.in
-sudo sh ~/opnsense-bootstrap.sh.in -y -r 23.1
+sudo sh ~/opnsense-bootstrap.sh.in -y -r 23.7
 sudo cp ~/config.xml /usr/local/etc/config.xml
 sudo reboot
 EOF

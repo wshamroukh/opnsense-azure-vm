@@ -2,7 +2,7 @@
 # https://github.com/opnsense/update
 #variables
 rg='opnsense'
-location='uaenorth'
+location='centralindia'
 vm_name='opnsense'
 vm_image=$(az vm image list -l $location -p thefreebsdfoundation --sku 14_1-release-zfs --all --query "[?offer=='freebsd-14_1'].urn" -o tsv | sort -u | tail -n 1) && echo $hub1_fw_vm_image
 az vm image terms accept --urn $vm_image -o none
@@ -12,6 +12,7 @@ lan_subnet_name='lan-subnet'
 lan_subnet_address='10.10.1.0/24'
 wan_subnet_name='wan-subnet'
 wan_subnet_address='10.10.0.0/24'
+vm_size=Standard_B2ats_v2
 admin_username=$(whoami)
 admin_password='P@ssw0rd#$3cr3t'
 
@@ -50,7 +51,7 @@ echo -e "\e[1;36mCreating $vm_name VM...\e[0m"
 az network public-ip create -g $rg -n "$vm_name-public-ip" --allocation-method Static --sku Basic -o none
 az network nic create -g $rg -n "$vm_name-wan-nic" --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address "$vm_name-public-ip" -o none
 az network nic create -g $rg -n "$vm_name-lan-nic" --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
-az vm create -g $rg -n $vm_name --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size Standard_B2s --admin-username $admin_username --generate-ssh-keys --no-wait
+az vm create -g $rg -n $vm_name --image $vm_image --nics "$vm_name-wan-nic" "$vm_name-lan-nic" --os-disk-name $vm_name-osdisk --size $vm_size --admin-username $admin_username --generate-ssh-keys --no-wait
 
 # vm details
 opnsense_public_ip=$(az network public-ip show -g $rg -n "$vm_name-public-ip" --query 'ipAddress' --output tsv) && echo $vm_name public ip address: $opnsense_public_ip

@@ -36,30 +36,6 @@ sudo cp ~/config.xml /usr/local/etc/config.xml
 sudo reboot
 EOF
 
-
-function wait_until_finished {
-     wait_interval=15
-     resource_id=$1
-     resource_name=$(echo $resource_id | cut -d/ -f 9)
-     echo -e "\e[1;36mWaiting for resource $resource_name to finish provisioning...\e[0m"
-     start_time=`date +%s`
-     state=$(az resource show --id $resource_id --query properties.provisioningState -o tsv)
-     until [[ "$state" == "Succeeded" ]] || [[ "$state" == "Failed" ]] || [[ -z "$state" ]]
-     do
-        sleep $wait_interval
-        state=$(az resource show --id $resource_id --query properties.provisioningState -o tsv)
-     done
-     if [[ -z "$state" ]]
-     then
-        echo -e "\e[1;31mSomething really bad happened...\e[0m"
-     else
-        run_time=$(expr `date +%s` - $start_time)
-        ((minutes=${run_time}/60))
-        ((seconds=${run_time}%60))
-        echo -e "\e[1;32mResource $resource_name provisioning state is $state, wait time $minutes minutes and $seconds seconds\e[0m"
-     fi
-}
-
 # resource group
 echo -e "\e[1;36mCreating Resource Group $rg...\e[0m"
 az group create -n $rg -l $location -o none
@@ -78,10 +54,6 @@ az vm create -g $rg -n $vm_name --image $vm_image --nics "$vm_name-wan-nic" "$vm
 
 # vm details
 opnsense_public_ip=$(az network public-ip show -g $rg -n "$vm_name-public-ip" --query 'ipAddress' --output tsv) && echo $vm_name public ip address: $opnsense_public_ip
-opnsense_vm_id=$(az vm show -g $rg -n $vm_name --query 'id' -o tsv)
-
-# waiting for vm to finish provisioning
-wait_until_finished $opnsense_vm_id
 
 # enable vm boot diagnostic
 echo -e "\e[1;36mEnabling VM boot diagnostics...\e[0m"

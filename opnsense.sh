@@ -20,8 +20,6 @@ cat <<EOF > $cloud_init_file
 #!/usr/local/bin/bash
 echo $admin_password | sudo -S pkg update
 sudo pkg upgrade -y
-sudo pkg install -y nano ca_root_nss
-sudo /usr/libexec/locate.updatedb
 sed 's/#PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config > /tmp/sshd_config
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config_tmp
 sudo mv /tmp/sshd_config /etc/ssh/sshd_config
@@ -30,8 +28,10 @@ echo -e "$admin_password\n$admin_password" | sudo passwd root
 fetch https://raw.githubusercontent.com/opnsense/update/master/src/bootstrap/opnsense-bootstrap.sh.in
 sed 's/reboot/#reboot/' opnsense-bootstrap.sh.in >opnsense-bootstrap.sh.in.tmp
 mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
-chmod +x opnsense-bootstrap.sh.in
-sudo sh ~/opnsense-bootstrap.sh.in -y -r 23.7
+sed 's/set -e/#set -e/' opnsense-bootstrap.sh.in >opnsense-bootstrap.sh.in.tmp
+mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
+sudo chmod +x opnsense-bootstrap.sh.in
+sudo sh ~/opnsense-bootstrap.sh.in -y -r 24.7
 sudo cp ~/config.xml /usr/local/etc/config.xml
 sudo reboot
 EOF

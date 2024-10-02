@@ -64,7 +64,7 @@ config_file=~/config.xml
 curl https://raw.githubusercontent.com/wshamroukh/opnsense/main/config.xml -O
 echo -e "\e[1;36mCopying configuration files to $vm_name and installing opnsense firewall...\e[0m"
 scp -o StrictHostKeyChecking=no $cloud_init_file $config_file $admin_username@$opnsense_public_ip:/home/$admin_username
-ssh -o StrictHostKeyChecking=no $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/cloud_init.sh && /home/$admin_username/cloud_init.sh"
+ssh -o StrictHostKeyChecking=no $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/cloud_init.sh && sh /home/$admin_username/cloud_init.sh"
 rm $cloud_init_file $config_file
 echo -e "\e[1;31mVM is now rebooting. You can access it by going to https://$opnsense_public_ip/ \n usename: root \n passwd: opnsense\nIt's highly recommended to change the password\e[0m"
 

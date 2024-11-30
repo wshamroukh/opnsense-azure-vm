@@ -58,9 +58,9 @@ az network vnet subnet create -g $rg -n $wan_subnet_name --vnet-name $vnet_name 
 # vm
 echo -e "\e[1;36mCreating $vm_name VM...\e[0m"
 az network public-ip create -g $rg -n $vm_name --allocation-method Static --sku Basic -o none
-az network nic create -g $rg -n $vm_name-wan --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --address "$vm_name" -o none
+az network nic create -g $rg -n $vm_name-wan --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address $vm_name -o none
 az network nic create -g $rg -n $vm_name-lan --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
-az vm create -g $rg -n $vm_name --image $vm_image -s $vm_name-wan $vm_name-lan --os-disk-name $vm_name --size $vm_size --admin-username $admin_username --generate-ssh-keys
+az vm create -g $rg -n $vm_name --image $vm_image --nics $vm_name-wan $vm_name-lan --os-disk-name $vm_name --size $vm_size --admin-username $admin_username --generate-ssh-keys
 # vm details
 opnsense_public_ip=$(az network public-ip show -g $rg -n $vm_name --query 'ipAddress' --output tsv) && echo $vm_name public ip address: $opnsense_public_ip
 

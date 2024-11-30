@@ -72,7 +72,7 @@ az vm boot-diagnostics enable -n $vm_name -g $rg -o none
 
 # installation and configuration of opnsense 
 config_file=~/config.xml
-curl -o $config_file https://raw.githubusercontent.com/wshamroukh/opnsense/main/config.xml
+curl -o $config_file https://raw.githubusercontent.com/wshamroukh/opnsense-azure-vm/refs/heads/main/config.xml
 echo -e "\e[1;36mCopying configuration files to $vm_name and installing opnsense firewall...\e[0m"
 scp -o StrictHostKeyChecking=no $cloud_init_file $config_file $admin_username@$opnsense_public_ip:/home/$admin_username
 ssh -o StrictHostKeyChecking=no $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/cloud_init.sh && sh /home/$admin_username/cloud_init.sh"

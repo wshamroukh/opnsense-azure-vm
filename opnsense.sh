@@ -3,7 +3,7 @@
 rg='opnsense'
 location='centralindia'
 vm_name='opnsense'
-vm_image=$(az vm image list -l $location -p thefreebsdfoundation --sku 14_1-release-zfs --all --query "[?offer=='freebsd-14_1'].urn" -o tsv | sort -u | tail -n 1) && echo $hub1_fw_vm_image
+vm_image=$(az vm image list -l $location -p thefreebsdfoundation --sku 14_2-release-zfs --all --query "[?offer=='freebsd-14_2'].urn" -o tsv | sort -u | tail -n 1) && echo $hub1_fw_vm_image
 az vm image terms accept --urn $vm_image -o none
 vnet_name='opnsense-vnet'
 vnet_address='10.10.0.0/16'

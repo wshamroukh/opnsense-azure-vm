@@ -92,3 +92,6 @@ rm $ascript
 #https://publicIP/
 #usename: root
 #passwd: opnsense
+
+# Cleanup
+# az group delete -g $rg --yes --no-wait -o none

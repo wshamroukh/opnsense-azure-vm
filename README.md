@@ -1,2 +1,2 @@
 # OPNsense on Azure VM
-This scripts creates an Azure VM and installs OPNSENSE firewall
+This scripts creates an Azure VM with OPNSENSE firewall

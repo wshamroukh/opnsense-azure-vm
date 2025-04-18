@@ -13,9 +13,8 @@ wan_subnet_name='wan-subnet'
 wan_subnet_address='10.10.0.0/24'
 vm_size=Standard_B2als_v2
 admin_username=$(whoami)
-admin_password='P@ssw0rd#$3cr3t'
 
-cloud_init_file=~/cloud_init.sh
+cloud_init_file=cloud_init.sh
 cat <<EOF > $cloud_init_file
 #!/usr/local/bin/bash
 echo $admin_password | sudo -S pkg update
@@ -41,6 +40,10 @@ cd ~/WALinuxAgent/
 git checkout v2.9.1.1
 sudo python setup.py install
 sudo ln -sf /usr/local/sbin/waagent /usr/sbin/waagent
+echo '#! /bin/sh' >> /usr/local/etc/rc.d/waagent.sh
+echo '/usr/local/sbin/waagent --daemon' >> /usr/local/etc/rc.d/waagent.sh
+chmod +x /usr/local/etc/rc.d/waagent.sh
+echo 'waagent_enable="YES"' >> /etc/rc.conf.local
 sudo service waagent start
 sudo service waagent status
 sudo reboot
@@ -62,7 +65,7 @@ az network nic create -g $rg -n $vm_name-wan --subnet $wan_subnet_name --vnet-na
 az network nic create -g $rg -n $vm_name-lan --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
 az vm create -g $rg -n $vm_name --image $vm_image --nics $vm_name-wan $vm_name-lan --os-disk-name $vm_name --size $vm_size --admin-username $admin_username --generate-ssh-keys
 # vm details
-opnsense_public_ip=$(az network public-ip show -g $rg -n $vm_name --query 'ipAddress' --output tsv) && echo $vm_name public ip address: $opnsense_public_ip
+opnsense_public_ip=$(az network public-ip show -g $rg -n $vm_name --query 'ipAddress' -o tsv | tr -d '\r') && echo $vm_name public ip address: $opnsense_public_ip
 
 # enable vm boot diagnostic
 echo -e "\e[1;36mEnabling VM boot diagnostics...\e[0m"

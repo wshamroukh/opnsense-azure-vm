@@ -46,11 +46,8 @@ cd ~/WALinuxAgent/
 git checkout v2.9.1.1
 sudo python setup.py install
 sudo ln -sf /usr/local/sbin/waagent /usr/sbin/waagent
-echo '#! /bin/sh' >> /usr/local/etc/rc.d/waagent.sh
-echo '/usr/local/sbin/waagent --daemon' >> /usr/local/etc/rc.d/waagent.sh
-chmod +x /usr/local/etc/rc.d/waagent.sh
-echo 'waagent_enable="YES"' >> /etc/rc.conf.local
 service waagent start
+service waagent enable
 service waagent status
 EOF
 

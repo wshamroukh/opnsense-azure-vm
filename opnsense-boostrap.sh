@@ -23,7 +23,6 @@ sed 's/#PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config > /tmp/ss
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config_tmp
 sudo mv /tmp/sshd_config /etc/ssh/sshd_config
 sudo /etc/rc.d/sshd restart
-echo -e "$admin_password\n$admin_password" | sudo passwd root
 fetch https://raw.githubusercontent.com/opnsense/update/master/src/bootstrap/opnsense-bootstrap.sh.in
 sed 's/reboot/#reboot/' opnsense-bootstrap.sh.in >opnsense-bootstrap.sh.in.tmp
 mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
@@ -32,23 +31,14 @@ mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
 sudo chmod +x opnsense-bootstrap.sh.in
 sudo sh ~/opnsense-bootstrap.sh.in -y -r 25.1
 sudo cp ~/config.xml /usr/local/etc/config.xml
-sudo reboot
-EOF
-
-ascript=ascript.sh
-cat <<EOF > $ascript
-#!/usr/local/bin/bash
 sudo pkg upgrade
-sudo pkg install -y bash git py311-setuptools-63.1.0_2
+sudo pkg install -y bash git py311-setuptools-63.1.0_3
 sudo ln -s /usr/local/bin/python3.11 /usr/local/bin/python
-git clone https://github.com/Azure/WALinuxAgent.git
+git -c http.sslVerify=false clone https://github.com/Azure/WALinuxAgent.git
 cd ~/WALinuxAgent/
-git checkout v2.9.1.1
-sudo python setup.py install
-sudo ln -sf /usr/local/sbin/waagent /usr/sbin/waagent
-service waagent start
-service waagent enable
-service waagent status
+git checkout v2.13.1.1
+sudo python setup.py install --register-service --force
+sudo reboot
 EOF
 
 # resource group
@@ -81,10 +71,6 @@ scp -o StrictHostKeyChecking=no $cloud_init_file $config_file $admin_username@$o
 ssh -o StrictHostKeyChecking=no $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/cloud_init.sh && sh /home/$admin_username/cloud_init.sh"
 rm $cloud_init_file $config_file
 echo -e "\e[1;31mVM is now rebooting. You can access it by going to https://$opnsense_public_ip/ \n usename: root \n passwd: opnsense\nIt's highly recommended to change the password\e[0m"
-
-scp -o StrictHostKeyChecking=no $ascript root@$opnsense_public_ip:/root/
-ssh -o StrictHostKeyChecking=no root@$opnsense_public_ip "chmod +x /root/ascript.sh && sh /root/ascript.sh"
-rm $ascript
 
 #https://publicIP/
 #usename: root

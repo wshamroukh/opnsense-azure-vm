@@ -40,6 +40,8 @@ hub1_fw_lan_private_ip=$(az network nic show -g $rg -n $vm_name-lan --query ipCo
 echo -e "\e[1;36mEnabling VM boot diagnostics for $vm_name...\e[0m"
 az vm boot-diagnostics enable -g $rg -n $vm_name -o none
 
+echo -e "\e[1;32mOpnsense was Deployed Successfully.Try accessing it at https://$hub1_fw_public_ip/ with username: root and password: opnsense\e[0m"
+
 #https://publicIP/
 #usename: root
 #passwd: opnsense

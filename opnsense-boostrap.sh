@@ -36,7 +36,7 @@ sudo pkg install -y bash git py311-setuptools-63.1.0_3
 sudo ln -s /usr/local/bin/python3.11 /usr/local/bin/python
 git -c http.sslVerify=false clone https://github.com/Azure/WALinuxAgent.git
 cd ~/WALinuxAgent/
-git checkout v2.13.1.1
+git checkout v2.14.0.1
 sudo python setup.py install --register-service --force
 sudo reboot
 EOF

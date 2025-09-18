@@ -31,7 +31,8 @@ mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
 sudo chmod +x opnsense-bootstrap.sh.in
 sudo sh ~/opnsense-bootstrap.sh.in -y -r 25.7
 sudo cp ~/config.xml /usr/local/etc/config.xml
-sudo pkg upgrade
+sudo pkg update 
+sudo pkg upgrade -y
 sudo pkg install -y bash git py311-setuptools-63.1.0_3
 sudo ln -s /usr/local/bin/python3.11 /usr/local/bin/python
 git -c http.sslVerify=false clone https://github.com/Azure/WALinuxAgent.git

@@ -14,8 +14,8 @@ wan_subnet_address='10.10.0.0/24'
 vm_size=Standard_B2als_v2
 admin_username=$(whoami)
 
-cloud_init_file=cloud_init.sh
-cat <<EOF > $cloud_init_file
+opnsense_init_file=opnsense_init.sh
+cat <<EOF > $opnsense_init_file
 #!/usr/local/bin/bash
 echo $admin_password | sudo -S pkg update
 sudo pkg upgrade -y
@@ -68,9 +68,9 @@ az vm boot-diagnostics enable -n $vm_name -g $rg -o none
 config_file=~/config.xml
 curl -o $config_file https://raw.githubusercontent.com/wshamroukh/opnsense-azure-vm/refs/heads/main/config.xml
 echo -e "\e[1;36mCopying configuration files to $vm_name and installing opnsense firewall...\e[0m"
-scp -o StrictHostKeyChecking=no $cloud_init_file $config_file $admin_username@$opnsense_public_ip:/home/$admin_username
-ssh -o StrictHostKeyChecking=no $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/cloud_init.sh && sh /home/$admin_username/cloud_init.sh"
-rm $cloud_init_file $config_file
+scp -o StrictHostKeyChecking=no $opnsense_init_file $config_file $admin_username@$opnsense_public_ip:/home/$admin_username
+ssh -o StrictHostKeyChecking=no $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/opnsense_init.sh && sh /home/$admin_username/opnsense_init.sh"
+rm $opnsense_init_file $config_file
 echo -e "\e[1;31mVM is now rebooting. You can access it by going to https://$opnsense_public_ip/ \n usename: root \n passwd: opnsense\nIt's highly recommended to change the password\e[0m"
 
 #https://publicIP/

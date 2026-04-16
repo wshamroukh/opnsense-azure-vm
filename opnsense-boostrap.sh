@@ -3,7 +3,7 @@
 rg='opnsense'
 location='centralindia'
 vm_name='opnsense'
-vm_image=$(az vm image list -l $location -p thefreebsdfoundation --sku 14_2-release-zfs --all --query "[?offer=='freebsd-14_2'].urn" -o tsv | tr -d '\r') && echo $vm_image
+vm_image=$(az vm image list -l $location -p thefreebsdfoundation --sku 14_3-release-zfs --all --query "[?offer=='freebsd-14_3'].urn" -o tsv | tr -d '\r') && echo $vm_image
 az vm image terms accept --urn $vm_image -o none
 vnet_name='opnsense-vnet'
 vnet_address='10.10.0.0/16'
@@ -11,7 +11,7 @@ lan_subnet_name='lan-subnet'
 lan_subnet_address='10.10.1.0/24'
 wan_subnet_name='wan-subnet'
 wan_subnet_address='10.10.0.0/24'
-vm_size=Standard_B2als_v2
+vm_size=Standard_B4als_v2
 admin_username=$(whoami)
 
 opnsense_init_file=opnsense_init.sh
@@ -33,7 +33,7 @@ sudo sh ~/opnsense-bootstrap.sh.in -y -r 26.1
 sudo cp ~/config.xml /usr/local/etc/config.xml
 sudo pkg update 
 sudo pkg upgrade -y
-sudo pkg install -y bash git py311-setuptools-63.1.0_3
+sudo pkg install -y bash git py313-setuptools-63.1.0_3 
 sudo ln -s /usr/local/bin/python3.13 /usr/local/bin/python
 git -c http.sslVerify=false clone https://github.com/Azure/WALinuxAgent.git
 cd ~/WALinuxAgent/

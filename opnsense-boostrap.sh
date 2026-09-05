@@ -3,7 +3,7 @@
 rg='opnsense'
 location='centralindia'
 vm_name='opnsense'
-vm_image=$(az vm image list -l $location -p thefreebsdfoundation --sku 14_3-release-zfs --all --query "[?offer=='freebsd-14_3'].urn" -o tsv | tr -d '\r') && echo $vm_image
+vm_image=$(az vm image list -l $location -p freebsd --sku 15_1-release-zfs --all --query "[?offer=='freebsd-15_1'].urn" -o tsv | tr -d '\r') && echo $vm_image
 az vm image terms accept --urn $vm_image -o none
 vnet_name='opnsense-vnet'
 vnet_address='10.10.0.0/16'
@@ -17,29 +17,18 @@ admin_username=$(whoami)
 opnsense_init_file=opnsense_init.sh
 cat <<EOF > $opnsense_init_file
 #!/usr/local/bin/bash
-echo $admin_password | sudo -S pkg update
-sudo pkg upgrade -y
-sed 's/#PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config > /tmp/sshd_config
-sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config_tmp
-sudo mv /tmp/sshd_config /etc/ssh/sshd_config
-sudo /etc/rc.d/sshd restart
 fetch https://raw.githubusercontent.com/opnsense/update/master/src/bootstrap/opnsense-bootstrap.sh.in
-sed 's/reboot/#reboot/' opnsense-bootstrap.sh.in >opnsense-bootstrap.sh.in.tmp
-mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
-sed 's/set -e/#set -e/' opnsense-bootstrap.sh.in >opnsense-bootstrap.sh.in.tmp
-mv opnsense-bootstrap.sh.in.tmp opnsense-bootstrap.sh.in
+sed -i.bak 's/reboot/#reboot/' opnsense-bootstrap.sh.in
+sed -i.bak "s#pkg delete -fa#pkg query -e '%R != \"FreeBSD-base\"' '%n' | xargs -r pkg delete -fy#" opnsense-bootstrap.sh.in
 sudo chmod +x opnsense-bootstrap.sh.in
-sudo sh ~/opnsense-bootstrap.sh.in -y -r 26.1
+sudo sh ~/opnsense-bootstrap.sh.in -y -r 26.7
+fetch https://raw.githubusercontent.com/wshamroukh/opnsense-azure-vm/refs/heads/main/config.xml
 sudo cp ~/config.xml /usr/local/etc/config.xml
-sudo pkg update 
-sudo pkg upgrade -y
-sudo pkg install -y bash git py313-setuptools-63.1.0_3 
-sudo ln -s /usr/local/bin/python3.13 /usr/local/bin/python
+sudo pkg install -y bash git py313-setuptools-63.1.0_3
 git -c http.sslVerify=false clone https://github.com/Azure/WALinuxAgent.git
 cd ~/WALinuxAgent/
 git checkout v2.15.0.1
 sudo python setup.py install --register-service --force
-sudo ln -s /etc/waagent.conf /usr/local/etc/waagent.conf
 waagent -register-service
 waagent start
 sudo reboot
@@ -59,7 +48,7 @@ echo -e "\e[1;36mCreating $vm_name VM...\e[0m"
 az network public-ip create -g $rg -n $vm_name --allocation-method Static --sku Basic -o none
 az network nic create -g $rg -n $vm_name-wan --subnet $wan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.0.250 --public-ip-address $vm_name -o none
 az network nic create -g $rg -n $vm_name-lan --subnet $lan_subnet_name --vnet-name $vnet_name --ip-forwarding true --private-ip-address 10.10.1.250 -o none
-az vm create -g $rg -n $vm_name --image $vm_image --nics $vm_name-wan $vm_name-lan --os-disk-name $vm_name --size $vm_size --admin-username $admin_username --generate-ssh-keys
+az vm create -g $rg -n $vm_name --image $vm_image --nics $vm_name-wan $vm_name-lan --os-disk-name $vm_name --size $vm_size --admin-username $admin_username --generate-ssh-keys -o none
 # vm details
 opnsense_public_ip=$(az network public-ip show -g $rg -n $vm_name --query 'ipAddress' -o tsv | tr -d '\r') && echo $vm_name public ip address: $opnsense_public_ip
 
@@ -68,12 +57,11 @@ echo -e "\e[1;36mEnabling VM boot diagnostics...\e[0m"
 az vm boot-diagnostics enable -n $vm_name -g $rg -o none
 
 # installation and configuration of opnsense 
-config_file=~/config.xml
-curl -o $config_file https://raw.githubusercontent.com/wshamroukh/opnsense-azure-vm/refs/heads/main/config.xml
-echo -e "\e[1;36mCopying configuration files to $vm_name and installing opnsense firewall...\e[0m"
-scp -o StrictHostKeyChecking=no $opnsense_init_file $config_file $admin_username@$opnsense_public_ip:/home/$admin_username
+echo -e "\e[1;36mCopying the init file to $vm_name and installing opnsense firewall...\e[0m"
+scp -o StrictHostKeyChecking=no $opnsense_init_file $admin_username@$opnsense_public_ip:/home/$admin_username
 ssh -o StrictHostKeyChecking=no $admin_username@$opnsense_public_ip "chmod +x /home/$admin_username/opnsense_init.sh && sh /home/$admin_username/opnsense_init.sh"
-rm $opnsense_init_file $config_file
+rm $opnsense_init_file
+ssh-keygen -f '/home/$admin_username/.ssh/known_hosts' -R $opnsense_public_ip
 echo -e "\e[1;31mVM is now rebooting. You can access it by going to https://$opnsense_public_ip/ \n usename: root \n passwd: opnsense\nIt's highly recommended to change the password\e[0m"
 
 #https://publicIP/
